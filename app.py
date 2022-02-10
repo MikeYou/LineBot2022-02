@@ -243,8 +243,7 @@ def getImageMessage(originalContentUrl):
     message = {
     "type": "image",
     "originalContentUrl": originalContentUrl,
-    "previewImageUrl": originalContentUrl
-}
+    "previewImageUrl": originalContentUrl}
     return message
 
 
