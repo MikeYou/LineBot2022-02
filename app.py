@@ -242,8 +242,8 @@ def getImageMessage(originalContentUrl):
     message = dict()
     message = {
     "type": "image",
-    "originalContentUrl": originalContentUrl
-    "previewImageUrl": originalContentUrl
+    "originalContentUrl": originalContentUrl,
+    "previewImageUrl": originalContentUrl,
 }
     return message
 
