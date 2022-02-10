@@ -55,7 +55,7 @@ def index():
                 elif text == "台北101圖":
                     payload["messages"] = [getTaipei101ImageMessage()]
                 elif text == "台北101影片":
-                    payload["messages"] = [getMRTVideoMessage()]                                      
+                    payload["messages"] = [getMRTVideoMessage()]
                 elif text == "quoda":
                     payload["messages"] = [
                             {
@@ -108,7 +108,7 @@ def index():
                         ]
                 replyMessage(payload)
             elif events[0]["message"]["type"] == "location":
-                title = events[0]["message"]["title"]
+                title = events[0]["message"].get("title", "")
                 latitude = events[0]["message"]["latitude"]
                 longitude = events[0]["message"]["longitude"]
                 payload["messages"] = [getLocationConfirmMessage(title, latitude, longitude)]
@@ -172,7 +172,7 @@ def sendTextMessageToMe():
 def getNameEmojiMessage():
     lookUpStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     productId = "5ac21a8c040ab15980c9b43f"
-    name = "Mike"
+    name = "Miles"
     message = dict()
     message["type"] = "text"
     message["text"] = "".join("$" for r in range(len(name)))
@@ -190,60 +190,53 @@ def getNameEmojiMessage():
 
 
 def getCarouselMessage(data):
-    message = dict()
-    message =       {
-  "type": "template",
-  "altText": "this is a image carousel template",
-  "template": {
-      "type": "image_carousel",
-      "columns": [
-          {
-            "imageUrl": "https://example.com/bot/images/item1.jpg",
-            "action": {
-              "type": "postback",
-              "label": "Buy",
-              "data": "action=buy&itemid=111"
-            }
-          },
-          {
-            "imageUrl": "https://example.com/bot/images/item2.jpg",
-            "action": {
-              "type": "message",
-              "label": "Yes",
-              "text": "yes"
-            }
-          },
-          {
-            "imageUrl": "https://example.com/bot/images/item3.jpg",
-            "action": {
-              "type": "uri",
-              "label": "View detail",
-              "uri": "http://example.com/page/222"
-            }
+    message = {
+      "type": "template",
+      "altText": "this is a image carousel template",
+      "template": {
+          "type": "image_carousel",
+          "columns": [
+              {
+                "imageUrl": F"{end_point}/static/taipei_101.jpeg",
+                "action": {
+                  "type": "postback",
+                  "label": "台北101",
+                  "data": "action=buy&itemid=111"
+                }
+              },
+              {
+                "imageUrl": F"{end_point}/static/taipei_1.jpeg",
+                "action": {
+                  "type": "postback",
+                  "label": "台北101",
+                  "data": "action=buy&itemid=111"
+                }
+              }
+          ]
           }
-      ]
-  }
-}
+        }
     return message
 
 
 def getLocationConfirmMessage(title, latitude, longitude):
+    data = {'title': title, 'latitude': latitude, 'longitude': longitude,
+            'action': 'get_near'}
     message = {
       "type": "template",
       "altText": "this is a confirm template",
       "template": {
           "type": "confirm",
-          "text": "Are you sure?",
+          "text": f"確認是否搜尋 {title} 附近地點？",
           "actions": [
               {
-                "type": "message",
-                "label": "Yes",
-                "text": "yes"
-              },
+                 "type": "postback",
+               "label": "是",
+               "data": json.dumps(data),
+               },
               {
                 "type": "message",
-                "label": "No",
-                "text": "no"
+                "label": "否",
+                "text": "n否"
               }
           ]
       }
@@ -258,16 +251,19 @@ def getCallCarMessage(data):
 
 def getPlayStickerMessage():
     message = dict()
-    message = {"type": "sticker",
-  "packageId": "446",
-  "stickerId": "1988"}
-  
-
+    message["type"] = "sticker"
+    message["packageId"] = "446"
+    message["stickerId"] = "1988"
     return message
 
 
 def getTaipei101LocationMessage():
     message = dict()
+    message["type"] = "location"
+    message["title"] = "台北101"
+    message["address"] = "110台北市信義區信義路五段7號"
+    message["latitude"] = 25.034056468449304
+    message["longitude"] = 121.56466736984362
     return message
 
 
@@ -304,25 +300,25 @@ def getImageMessage(originalContentUrl):
 
 
 def replyMessage(payload):
-    response =requests.post("https://api.line.me/v2/bot/message/reply",headers=HEADER, data=json.dumps(payload))
+    response = requests.post("https://api.line.me/v2/bot/message/reply",headers=HEADER,data=json.dumps(payload))
     return 'OK'
 
 
 def pushMessage(payload):
-    response = requests.post("https://api.line.me/v2/bot/message/push",headers=HEADER, data=json.dumps(payload))
+    response = requests.post("https://api.line.me/v2/bot/message/push",headers=HEADER,data=json.dumps(payload))
     return 'OK'
 
 
 def getTotalSentMessageCount():
-    response = requests.get("https://api.line.me/v2/bot/message/quota/consumption", headers = HEADER)
-    return 0
+    response = requests.get("https://api.line.me/v2/bot/message/quota/consumption",headers=HEADER)
+    return response.json()["totalUsage"]
 
 
 def getTodayCovid19Message():
-    respose = requests.get("https://covid-19.nchc.org.tw/api/covid19?CK=covid-19@nchc.org.tw&querydata=4001&limited=TWN")
-    date = ""
-    total_count = 0
-    count = 0
+    response = requests.get("https://covid-19.nchc.org.tw/api/covid19?CK=covid-19@nchc.org.tw&querydata=4001&limited=TWN")
+    date = response.json()[0]["a04"]
+    total_count = response.json()[0]["a05"]
+    count = response.json()[0]["a06"]
     return F"日期：{date}, 人數：{count}, 確診總人數：{total_count}"
 
 
