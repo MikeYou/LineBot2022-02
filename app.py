@@ -168,8 +168,20 @@ def sendTextMessageToMe():
 def getNameEmojiMessage():
     lookUpStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     productId = "5ac21a8c040ab15980c9b43f"
-    name = ""
+    name = "Mike"
     message = dict()
+    message["type"] = "text"
+    message["text"] = "".join("$" for r in range(len(name)))
+    emojis_list = list()
+    for i, nChar in enumerate(name):
+        emojis_list.append(
+            {
+              "index": i,
+              "productId": productId,
+              "emojiId": f"{lookUpStr.index(nChar) + 1 :03}"
+            }
+        )
+    message["emojis"] = emojis_list
     return message
 
 
@@ -235,11 +247,12 @@ def pushMessage(payload):
 
 
 def getTotalSentMessageCount():
-    response = {}
+    response = requests.get("https://api.line.me/v2/bot/message/quota/consumption", headers = HEADER)
     return 0
 
 
 def getTodayCovid19Message():
+    respose = requests.get("https://covid-19.nchc.org.tw/api/covid19?CK=covid-19@nchc.org.tw&querydata=4001&limited=TWN")
     date = ""
     total_count = 0
     count = 0
